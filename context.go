@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/containerd/continuity/devices"
@@ -50,6 +51,7 @@ type Context interface {
 	Verify(Resource) error
 	Resource(string, os.FileInfo) (Resource, error)
 	Walk(filepath.WalkFunc) error
+	DeviceNumber() uint64
 }
 
 // SymlinkPath is intended to give the symlink target value
@@ -69,11 +71,12 @@ type ContextOptions struct {
 // Generally, all path qualified access and system considerations should land
 // here.
 type context struct {
-	driver     driverpkg.Driver
-	pathDriver pathdriver.PathDriver
-	root       string
-	digester   Digester
-	provider   ContentProvider
+	driver       driverpkg.Driver
+	pathDriver   pathdriver.PathDriver
+	root         string
+	digester     Digester
+	provider     ContentProvider
+	deviceNumber uint64
 }
 
 // NewContext returns a Context associated with root. The default driver will
@@ -123,12 +126,17 @@ func NewContextWithOptions(root string, options ContextOptions) (Context, error)
 	}
 
 	return &context{
-		root:       root,
-		driver:     driver,
-		pathDriver: pathDriver,
-		digester:   digester,
-		provider:   options.Provider,
+		root:         root,
+		driver:       driver,
+		pathDriver:   pathDriver,
+		digester:     digester,
+		provider:     options.Provider,
+		deviceNumber: fi.Device,
 	}, nil
+}
+
+func (c *context) DeviceNumber() uint64 {
+	return c.deviceNumber
 }
 
 // Resource returns the resource as path p, populating the entry with info
@@ -140,12 +148,16 @@ func (c *context) Resource(p string, fi os.FileInfo) (Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if fi == nil {
 		fi, err = c.driver.Lstat(fp)
 		if err != nil {
 			return nil, err
 		}
+	}
+	sys, ok := fi.Sys().(*syscall.Stat_t)
+	if ok && sys.Dev != c.deviceNumber {
+		fmt.Fprintf(os.Stderr, "Skipping resource %s on another mount point \n", p)
+		return nil, ErrNotFound
 	}
 
 	base, err := newBaseResource(p, fi)
@@ -437,7 +449,8 @@ func (c *context) Apply(resource Resource) error {
 	}
 
 	chmod := true
-	fi, err := c.driver.Lstat(fp)
+	fiDev, err := c.driver.Lstat(fp)
+	fi := fiDev.FileInfo
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err

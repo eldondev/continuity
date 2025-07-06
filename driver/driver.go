@@ -18,11 +18,17 @@ package driver
 
 import (
 	"fmt"
+	"syscall"
 	"io"
 	"os"
 )
 
 var ErrNotSupported = fmt.Errorf("not supported")
+
+type FileInfo struct {
+	os.FileInfo
+	Device uint64
+}
 
 // Driver provides all of the system-level functions in a common interface.
 // The context should call these with full paths and should never use the `os`
@@ -42,8 +48,8 @@ type Driver interface {
 	Open(path string) (File, error)
 	OpenFile(path string, flag int, perm os.FileMode) (File, error)
 
-	Stat(path string) (os.FileInfo, error)
-	Lstat(path string) (os.FileInfo, error)
+	Stat(path string) (FileInfo, error)
+	Lstat(path string) (FileInfo, error)
 	Readlink(p string) (string, error)
 	Mkdir(path string, mode os.FileMode) error
 	Remove(path string) error
@@ -133,12 +139,22 @@ func (d *driver) OpenFile(path string, flag int, perm os.FileMode) (File, error)
 	return os.OpenFile(path, flag, perm)
 }
 
-func (d *driver) Stat(p string) (os.FileInfo, error) {
-	return os.Stat(p)
+func (d *driver) Stat(p string) (FileInfo, error) {
+	var ret FileInfo
+	var err error
+	ret.FileInfo, err = os.Stat(p)
+	sys, _ := ret.FileInfo.Sys().(*syscall.Stat_t)
+	ret.Device = sys.Dev
+	return ret, err
 }
 
-func (d *driver) Lstat(p string) (os.FileInfo, error) {
-	return os.Lstat(p)
+func (d *driver) Lstat(p string) (FileInfo, error) {
+	var ret FileInfo
+	var err error
+	ret.FileInfo, err =  os.Lstat(p)
+	sys, _ := ret.FileInfo.Sys().(*syscall.Stat_t)
+	ret.Device = sys.Dev
+	return ret, err
 }
 
 func (d *driver) Readlink(p string) (string, error) {

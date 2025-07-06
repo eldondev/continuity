@@ -24,7 +24,7 @@ import (
 
 	pb "github.com/containerd/continuity/proto"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/encoding/prototext"
+	"encoding/json"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -54,6 +54,7 @@ var DumpCmd = &cobra.Command{
 		}
 
 		// TODO(stevvooe): For now, just dump the text format. Turn this into nice text output later.
-		_, _ = fmt.Fprintln(os.Stdout, prototext.Format(&bm))
+		bmJason, _ := json.Marshal(&bm)
+		_, _ = fmt.Fprintln(os.Stdout, string(bmJason))
 	},
 }
