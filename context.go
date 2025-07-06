@@ -111,6 +111,9 @@ func NewContextWithOptions(root string, options ContextOptions) (Context, error)
 	if digester == nil {
 		digester = simpleDigester{digest.Canonical}
 	}
+	if os.Getenv("DIGESTER") == "NULL" {
+		digester = nil
+	}
 
 	// Check the root directory. Need to be a little careful here. We are
 	// allowing a link for now, but this may have odd behavior when
@@ -666,6 +669,9 @@ func (c *context) containWithRoot(p string, root string) (string, error) {
 
 // digest returns the digest of the file at path p, relative to the root.
 func (c *context) digest(p string) (digest.Digest, error) {
+	if c.digester == nil {
+		return "", nil
+	}
 	f, err := c.driver.Open(c.pathDriver.Join(c.root, p))
 	if err != nil {
 		return "", err
