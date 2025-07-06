@@ -591,10 +591,10 @@ func fromProto(b *pb.Resource) (Resource, error) {
 		mode:  os.FileMode(b.Mode),
 		uid:   b.Uid,
 		gid:   b.Gid,
-		atime: time.Unix(b.Atime,0),
-		mtime: time.Unix(b.Mtime,0),
-		ctime: time.Unix(b.Ctime,0),
-		btime: time.Unix(b.Btime,0),
+		atime: time.Unix(0, b.Atime),
+		mtime: time.Unix(0, b.Mtime),
+		ctime: time.Unix(0, b.Ctime),
+		btime: time.Unix(0, b.Btime),
 	}
 
 	base.xattrs = make(map[string][]byte, len(b.Xattr))
