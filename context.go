@@ -215,9 +215,6 @@ func (c *context) verifyTimestamps(resource, target Resource) error {
 		// Note: t.IsZero() returns true if t == 0001-01-01 00:00:00, not Unix epoch
 		return t.Unix() == 0 && t.UnixNano() == 0
 	}
-	if !unixZero(resource.ATime()) && !resource.ATime().Equal(target.ATime()) {
-		return fmt.Errorf("resource %q has incorrect atime: %v != %v", target.Path(), target.ATime(), resource.ATime())
-	}
 	if !unixZero(resource.MTime()) && !resource.MTime().Equal(target.MTime()) {
 		return fmt.Errorf("resource %q has incorrect mtime: %v != %v", target.Path(), target.MTime(), resource.MTime())
 	}
@@ -694,7 +691,6 @@ func (c *context) resolveXAttrs(fp string, fi os.FileInfo, base *resource) (map[
 // When BTime is unsupported, it is set to the Unix epoch.
 func (c *context) resolveTimestamps(fp string, base *resource) {
 	ts, _ := times.Stat(fp)
-	base.atime = ts.AccessTime()
 	base.mtime = ts.ModTime()
 	base.ctime = ts.ChangeTime()
 	base.btime = ts.BirthTime()

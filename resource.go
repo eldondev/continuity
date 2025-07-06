@@ -48,7 +48,6 @@ type Resource interface {
 	UID() int64
 	GID() int64
 
-	ATime() time.Time
 	MTime() time.Time
 	CTime() time.Time
 	BTime() time.Time
@@ -132,10 +131,6 @@ func Merge(fs ...Resource) (Resource, error) {
 			return nil, fmt.Errorf("gid does not match burp: %v != %v", f.GID(), prototype.GID())
 		}
 
-		if f.ATime() != prototype.ATime() {
-			return nil, fmt.Errorf("atime does not match: %v != %v", f.ATime(), prototype.ATime())
-		}
-
 		if f.MTime() != prototype.MTime() {
 			return nil, fmt.Errorf("mtime does not match: %v != %v", f.MTime(), prototype.MTime())
 		}
@@ -210,7 +205,6 @@ func Merge(fs ...Resource) (Resource, error) {
 		mode:   first.Mode(),
 		uid:    first.UID(),
 		gid:    first.GID(),
-		atime:  first.ATime(),
 		mtime:  first.MTime(),
 		ctime:  first.CTime(),
 		btime:  first.BTime(),
@@ -309,10 +303,6 @@ func (r *resource) UID() int64 {
 
 func (r *resource) GID() int64 {
 	return r.gid
-}
-
-func (r *resource) ATime() time.Time {
-	return r.atime
 }
 
 func (r *resource) MTime() time.Time {
@@ -532,7 +522,6 @@ func toProto(resource Resource) *pb.Resource {
 		Mode:  uint32(resource.Mode()),
 		Uid:   resource.UID(),
 		Gid:   resource.GID(),
-		Atime: resource.ATime().UnixNano(),
 		Mtime: resource.MTime().UnixNano(),
 		Ctime: resource.CTime().UnixNano(),
 		Btime: resource.BTime().UnixNano(),
@@ -591,7 +580,6 @@ func fromProto(b *pb.Resource) (Resource, error) {
 		mode:  os.FileMode(b.Mode),
 		uid:   b.Uid,
 		gid:   b.Gid,
-		atime: time.Unix(0, b.Atime),
 		mtime: time.Unix(0, b.Mtime),
 		ctime: time.Unix(0, b.Ctime),
 		btime: time.Unix(0, b.Btime),
