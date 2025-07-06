@@ -158,7 +158,7 @@ func (c *context) Resource(p string, fi os.FileInfo) (Resource, error) {
 		return nil, err
 	}
 
-	c.resolveTimestamps(fi, base)
+	c.resolveTimestamps(fp, base)
 
 	// TODO(stevvooe): Handle windows alternate data streams.
 
@@ -240,7 +240,7 @@ func (c *context) verifyMetadata(resource, target Resource) error {
 	}
 
 	if target.GID() != resource.GID() {
-		return fmt.Errorf("unexpected gid for %q: %v != %v", target.Path(), target.GID(), target.GID())
+		return fmt.Errorf("unexpected gid for %q: %v != %v", target.Path(), target.GID(), resource.GID())
 	}
 
 	if err := c.verifyTimestamps(resource, target); err != nil {
@@ -692,15 +692,10 @@ func (c *context) resolveXAttrs(fp string, fi os.FileInfo, base *resource) (map[
 
 // resolveTimestamps set base.[AMCB]Times.
 // When BTime is unsupported, it is set to the Unix epoch.
-func (c *context) resolveTimestamps(fi os.FileInfo, base *resource) {
-	ts := times.Get(fi)
+func (c *context) resolveTimestamps(fp string, base *resource) {
+	ts, _ := times.Stat(fp)
 	base.atime = ts.AccessTime()
 	base.mtime = ts.ModTime()
 	base.ctime = ts.ChangeTime()
-	if ts.HasBirthTime() {
-		base.btime = ts.BirthTime()
-	} else {
-		// Note: time.Time{} stands for 0001-01-01 00:00:00 UTC
-		base.btime = time.Unix(0, 0)
-	}
+	base.btime = ts.BirthTime()
 }

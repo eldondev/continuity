@@ -129,7 +129,7 @@ func Merge(fs ...Resource) (Resource, error) {
 		}
 
 		if f.GID() != prototype.GID() {
-			return nil, fmt.Errorf("gid does not match: %v != %v", f.GID(), prototype.GID())
+			return nil, fmt.Errorf("gid does not match burp: %v != %v", f.GID(), prototype.GID())
 		}
 
 		if f.ATime() != prototype.ATime() {

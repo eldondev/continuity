@@ -3,8 +3,6 @@ syntax = "proto3";
 package proto;
 option go_package = "github.com/containerd/continuity/proto;proto";
 
-import "google/protobuf/timestamp.proto";
-
 // Manifest specifies the entries in a container bundle, keyed and sorted by
 // path.
 message Manifest {
@@ -71,10 +69,18 @@ message Resource {
     // Timestamps.
     // btime (birthtime) is available on Darwin, FreeBSD, NetBSD, and Windows.
     // When btime is unknown, it SHOULD be set to zero.
-    google.protobuf.Timestamp atime = 14;
-    google.protobuf.Timestamp mtime = 15;
-    google.protobuf.Timestamp ctime = 16;
-    google.protobuf.Timestamp btime = 17;
+    
+    //ATime specifies the access time for the resource
+    int64 atime = 14;
+
+    //MTime specifies the modification time for the resource
+    int64 mtime = 15;
+
+    //CTime specifies the change time for the resource
+    int64 ctime = 16;
+
+    //BTime specifies the birth time for the resource
+    int64 btime = 17;
 }
 
 // XAttr encodes extended attributes for a resource.

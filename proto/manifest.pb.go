@@ -112,12 +112,13 @@ type Resource struct {
 	Xattr []*XAttr `protobuf:"bytes,12,rep,name=xattr,proto3" json:"xattr,omitempty"`
 	// Ads stores one or more alternate data streams for the target resource.
 	Ads []*ADSEntry `protobuf:"bytes,13,rep,name=ads,proto3" json:"ads,omitempty"`
-	// Timestamps.
-	// btime (birthtime) is available on Darwin, FreeBSD, NetBSD, and Windows.
-	// When btime is unknown, it SHOULD be set to zero.
-	Atime         int64 `protobuf:"varint,14,opt,name=atime,proto3" json:"atime,omitempty"`
-	Mtime         int64 `protobuf:"varint,15,opt,name=mtime,proto3" json:"mtime,omitempty"`
-	Ctime         int64 `protobuf:"varint,16,opt,name=ctime,proto3" json:"ctime,omitempty"`
+	// ATime specifies the access time for the resource
+	Atime int64 `protobuf:"varint,14,opt,name=atime,proto3" json:"atime,omitempty"`
+	// MTime specifies the modification time for the resource
+	Mtime int64 `protobuf:"varint,15,opt,name=mtime,proto3" json:"mtime,omitempty"`
+	// CTime specifies the change time for the resource
+	Ctime int64 `protobuf:"varint,16,opt,name=ctime,proto3" json:"ctime,omitempty"`
+	// BTime specifies the birth time for the resource
 	Btime         int64 `protobuf:"varint,17,opt,name=btime,proto3" json:"btime,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

@@ -48,10 +48,14 @@ var VerifyCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("error getting context: %v", err)
 		}
-
-		if err := continuity.VerifyManifest(ctx, m); err != nil {
+		foundErr := false
+		for err := range continuity.VerifyManifest(ctx, m) {
 			// TODO(stevvooe): Support more interesting error reporting.
-			log.Fatalf("error verifying manifest: %v", err)
+			log.Printf("error verifying manifest: %v", err)
+			foundErr = true
+		}
+		if foundErr {
+			log.Fatalf("Verify failed")
 		}
 	},
 }

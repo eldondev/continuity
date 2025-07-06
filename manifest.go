@@ -141,14 +141,17 @@ func BuildManifest(fsContext Context) (*Manifest, error) {
 
 // VerifyManifest verifies all the resources in a manifest
 // against files from the given context.
-func VerifyManifest(fsContext Context, manifest *Manifest) error {
-	for _, rsrc := range manifest.Resources {
-		if err := fsContext.Verify(rsrc); err != nil {
-			return err
+func VerifyManifest(fsContext Context, manifest *Manifest) chan error {
+	result := make(chan error)
+	go func() {
+		for _, rsrc := range manifest.Resources {
+			if err := fsContext.Verify(rsrc); err != nil {
+				result <- err
+			}
 		}
-	}
-
-	return nil
+		close(result)
+	}()
+	return result
 }
 
 // ApplyManifest applies on the resources in a manifest to
