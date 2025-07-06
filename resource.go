@@ -532,10 +532,10 @@ func toProto(resource Resource) *pb.Resource {
 		Mode:  uint32(resource.Mode()),
 		Uid:   resource.UID(),
 		Gid:   resource.GID(),
-		Atime: timestampProto(resource.ATime()),
-		Mtime: timestampProto(resource.MTime()),
-		Ctime: timestampProto(resource.CTime()),
-		Btime: timestampProto(resource.BTime()),
+		Atime: resource.ATime().UnixNano(),
+		Mtime: resource.MTime().UnixNano(),
+		Ctime: resource.CTime().UnixNano(),
+		Btime: resource.BTime().UnixNano(),
 	}
 
 	if xattrer, ok := resource.(XAttrer); ok {
@@ -591,10 +591,10 @@ func fromProto(b *pb.Resource) (Resource, error) {
 		mode:  os.FileMode(b.Mode),
 		uid:   b.Uid,
 		gid:   b.Gid,
-		atime: timestampFromProto(b.Atime),
-		mtime: timestampFromProto(b.Mtime),
-		ctime: timestampFromProto(b.Ctime),
-		btime: timestampFromProto(b.Btime),
+		atime: time.Unix(b.Atime,0),
+		mtime: time.Unix(b.Mtime,0),
+		ctime: time.Unix(b.Ctime,0),
+		btime: time.Unix(b.Btime,0),
 	}
 
 	base.xattrs = make(map[string][]byte, len(b.Xattr))
